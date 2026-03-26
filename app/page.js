@@ -4,53 +4,54 @@ import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  PieChart, Pie, Cell, Legend, LineChart, Line, Area, AreaChart,
-  ScatterChart, Scatter, ZAxis, ReferenceLine
+  PieChart, Pie, Cell, Legend, ReferenceLine
 } from 'recharts'
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 
 const SUBJECT = {
   address: '6361 S Oldridge Pl, Rogers, AR 72758',
-  type: 'Industrial / Flex (Office · Retail · Warehouse)',
+  type: 'Flex Industrial',
+  subtype: 'Office / Retail / Warehouse',
   yearBuilt: 2025,
   totalSF: 38225,
   availableSpaces: 2,
-  smallestUnit: 4432,
-  largestUnit: 38225,
   askingRentLow: 16.00,
   askingRentHigh: 19.00,
   developer: 'NWA Industrial (Crossland Construction)',
-  permitValuation: 236730,
-  lotSizeAcres: null,
-  nearbyLotSale: { address: '6388 S Oldridge Pl', acres: 16.38, price: 3350000, date: 'Jun 2022' },
+  loopnetUrl: 'https://www.loopnet.com/Listing/6361-S-Oldridge-Pl-Rogers-AR/32391011/',
+  loopnetId: '32391011',
 }
 
 const COMPS = [
-  { id: 1, name: 'Bentonville Industrial', address: 'Hwy 12, Bentonville', sf: 284896, salePrice: 31480000, ppsf: 110, date: 'Aug 2025', type: 'Industrial', yearBuilt: null },
-  { id: 2, name: 'Bentonville Mixed-Use', address: 'S Main & SW 8th, Bentonville', sf: 8706, salePrice: 3500000, ppsf: 402, date: 'Nov 2025', type: 'Mixed-Use', yearBuilt: null },
-  { id: 3, name: 'Beau Terre Office Park', address: 'Beau Terre, Bentonville', sf: 381197, salePrice: 44600000, ppsf: 117, date: 'Oct 2024', type: 'Office', yearBuilt: null },
-  { id: 4, name: 'Rogers/Bentonville Portfolio', address: 'Pinnacle Hills & S Walton', sf: 405000, salePrice: 68000000, ppsf: 168, date: 'Feb 2026', type: 'Office Portfolio', yearBuilt: null },
-  { id: 5, name: 'Fayetteville Industrial', address: 'Fayetteville, AR', sf: 150000, salePrice: 15000000, ppsf: 100, date: 'Nov 2025', type: 'Industrial', yearBuilt: null },
+  { id: 1, name: 'Bentonville Industrial', address: 'Hwy 12, Bentonville, AR', sf: 284896, salePrice: 31480000, ppsf: 110, date: 'Aug 2025', type: 'Industrial', url: 'https://www.loopnet.com/search/commercial-real-estate/bentonville-ar/for-sale/' },
+  { id: 2, name: 'Bentonville Mixed-Use', address: 'S Main & SW 8th, Bentonville, AR', sf: 8706, salePrice: 3500000, ppsf: 402, date: 'Nov 2025', type: 'Mixed-Use', url: 'https://www.loopnet.com/search/commercial-real-estate/bentonville-ar/for-sale/' },
+  { id: 3, name: 'Beau Terre Office Park', address: 'Beau Terre Blvd, Bentonville, AR', sf: 381197, salePrice: 44600000, ppsf: 117, date: 'Oct 2024', type: 'Office', url: 'https://www.loopnet.com/search/office-space-for-lease/bentonville-ar/for-sale/' },
+  { id: 4, name: 'Rogers/Bentonville Portfolio', address: 'Pinnacle Hills & S Walton Blvd', sf: 405000, salePrice: 68000000, ppsf: 168, date: 'Feb 2026', type: 'Office Portfolio', url: 'https://talkbusiness.net/' },
+  { id: 5, name: 'Fayetteville Industrial', address: 'Fayetteville, AR', sf: 150000, salePrice: 15000000, ppsf: 100, date: 'Nov 2025', type: 'Industrial', url: 'https://www.loopnet.com/search/commercial-real-estate/fayetteville-ar/for-sale/' },
 ]
 
 const MARKET_DATA = {
   nwaIndustrialVacancy: 6.4,
-  nwaWarehouseVacancyH2: 6.1,
   avgWarehouseRent: 9.60,
   warehouseRentGrowth: 2.9,
   flexRentRange: { low: 16, high: 23 },
   newSupply2025SF: 1900000,
-  positiveAbsorptionQ1: 87824,
   positiveAbsorptionH2: 597962,
   nationalFlexCapRate: 6.93,
   centralRegionFlexCapRate: 7.13,
-  rogersIndustrialAvgPPSF: 235,
-  rogersWarehouseAvgPPSF: 267,
-  rogersCommercialAvgPPSF: 408,
 }
 
-// ─── VALUATION SCENARIOS ────────────────────────────────────────────────────
+const SOURCES = [
+  { name: 'LoopNet Listing #32391011', url: 'https://www.loopnet.com/Listing/6361-S-Oldridge-Pl-Rogers-AR/32391011/' },
+  { name: 'Cushman & Wakefield NWA Industrial Report', url: 'https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/arkansas-marketbeats' },
+  { name: 'Talk Business & Politics', url: 'https://talkbusiness.net/' },
+  { name: 'FRED — Fayetteville MSA Data', url: 'https://fred.stlouisfed.org/tags/series?t=fayetteville' },
+  { name: 'CBRE Cap Rate Survey H1 2024', url: 'https://www.cbre.com/insights/books/cap-rate-survey' },
+  { name: 'Rogers AR Building Permits', url: 'https://www.rogersar.gov/298/Building-Permits' },
+]
+
+// ─── VALUATION ──────────────────────────────────────────────────────────────
 
 function computeValuation(rentPSF, vacancyPct, opexPct, capRate) {
   const gpi = SUBJECT.totalSF * rentPSF
@@ -59,7 +60,7 @@ function computeValuation(rentPSF, vacancyPct, opexPct, capRate) {
   const opex = egi * (opexPct / 100)
   const noi = egi - opex
   const value = noi / (capRate / 100)
-  return { gpi, vacancy, egi, opex, noi, value, ppsf: value / SUBJECT.totalSF }
+  return { rentPSF, vacancyPct, opexPct, capRate, gpi, vacancy, egi, opex, noi, value, ppsf: value / SUBJECT.totalSF }
 }
 
 const scenarios = {
@@ -68,50 +69,22 @@ const scenarios = {
   optimistic: computeValuation(19.00, 4, 25, 6.50),
 }
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
+// ─── FORMATTERS ─────────────────────────────────────────────────────────────
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 const fmtDec = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 const fmtNum = (n) => new Intl.NumberFormat('en-US').format(n)
 const fmtPct = (n) => `${n.toFixed(1)}%`
 
-// ─── COMPONENTS ─────────────────────────────────────────────────────────────
+// ─── TOOLTIP ────────────────────────────────────────────────────────────────
 
-function Card({ children, className = '', span = 1 }) {
-  return (
-    <div className={`bg-[#111827] border border-[#1e293b] rounded-2xl p-6 ${span > 1 ? `col-span-${span}` : ''} ${className}`}>
-      {children}
-    </div>
-  )
-}
-
-function Metric({ label, value, sub, color = '#f1f5f9' }) {
-  return (
-    <div>
-      <div className="text-xs uppercase tracking-wider text-[#64748b] mb-1">{label}</div>
-      <div className="text-2xl font-bold" style={{ color }}>{value}</div>
-      {sub && <div className="text-xs text-[#94a3b8] mt-0.5">{sub}</div>}
-    </div>
-  )
-}
-
-function Badge({ children, color = '#3b82f6' }) {
-  return (
-    <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: `${color}20`, color }}>
-      {children}
-    </span>
-  )
-}
-
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4']
-
-const CustomTooltip = ({ active, payload, label, formatter }) => {
+const ChartTooltip = ({ active, payload, label, formatter }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm shadow-xl">
-      <div className="text-[#94a3b8] text-xs mb-1">{label}</div>
+    <div className="bg-white border border-[#e2e8f0] rounded px-3 py-2 text-sm shadow-lg">
+      <div className="text-[#64748b] text-xs mb-1">{label}</div>
       {payload.map((p, i) => (
-        <div key={i} className="font-semibold" style={{ color: p.color || '#f1f5f9' }}>
+        <div key={i} className="font-semibold text-[#0f172a]">
           {formatter ? formatter(p.value) : p.value}
         </div>
       ))}
@@ -125,34 +98,40 @@ export default function Dashboard() {
   const [activeScenario, setActiveScenario] = useState('base')
   const v = scenarios[activeScenario]
 
-  // Chart data
-  const compChartData = COMPS.map(c => ({ name: c.name.split(' ').slice(0,2).join(' '), ppsf: c.ppsf, sf: c.sf / 1000 }))
-  compChartData.push({ name: 'Subject (est.)', ppsf: Math.round(scenarios.base.ppsf), sf: SUBJECT.totalSF / 1000, isSubject: true })
+  const compChartData = [...COMPS.map(c => ({
+    name: c.name.length > 20 ? c.name.split(' ').slice(0,2).join(' ') : c.name,
+    ppsf: c.ppsf,
+    fill: '#94a3b8',
+  })), {
+    name: 'Subject (est.)',
+    ppsf: Math.round(scenarios.base.ppsf),
+    fill: '#1e40af',
+  }]
 
   const scenarioChartData = [
-    { name: 'Conservative', value: scenarios.conservative.value, noi: scenarios.conservative.noi, ppsf: Math.round(scenarios.conservative.ppsf) },
-    { name: 'Base Case', value: scenarios.base.value, noi: scenarios.base.noi, ppsf: Math.round(scenarios.base.ppsf) },
-    { name: 'Optimistic', value: scenarios.optimistic.value, noi: scenarios.optimistic.noi, ppsf: Math.round(scenarios.optimistic.ppsf) },
+    { name: 'Conservative', value: scenarios.conservative.value },
+    { name: 'Base Case', value: scenarios.base.value },
+    { name: 'Optimistic', value: scenarios.optimistic.value },
   ]
 
   const incomeBreakdown = [
     { name: 'NOI', value: Math.round(v.noi) },
-    { name: 'OpEx', value: Math.round(v.opex) },
-    { name: 'Vacancy', value: Math.round(v.vacancy) },
+    { name: 'Operating Expenses', value: Math.round(v.opex) },
+    { name: 'Vacancy Loss', value: Math.round(v.vacancy) },
   ]
 
-  const marketMetrics = [
-    { metric: 'Vacancy Rate', value: MARKET_DATA.nwaIndustrialVacancy, fullMark: 15 },
-    { metric: 'Rent Growth', value: MARKET_DATA.warehouseRentGrowth, fullMark: 10 },
-    { metric: 'Flex Demand', value: 8.5, fullMark: 10 },
-    { metric: 'New Supply', value: 6, fullMark: 10 },
-    { metric: 'Absorption', value: 7.5, fullMark: 10 },
-    { metric: 'Cap Rate Stability', value: 7, fullMark: 10 },
+  const radarData = [
+    { metric: 'Vacancy', value: 8 },
+    { metric: 'Rent Growth', value: 7 },
+    { metric: 'Flex Demand', value: 8.5 },
+    { metric: 'Supply Pipeline', value: 6 },
+    { metric: 'Absorption', value: 7.5 },
+    { metric: 'Cap Stability', value: 7 },
   ]
 
   const rentCompData = [
-    { name: 'Subject Low', rate: 16.00 },
-    { name: 'Subject High', rate: 19.00 },
+    { name: 'Subject Low', rate: 16.00, isSubject: true },
+    { name: 'Subject High', rate: 19.00, isSubject: true },
     { name: 'NWA Warehouse Avg', rate: 9.60 },
     { name: 'NWA Flex Low', rate: 16.00 },
     { name: 'NWA Flex High', rate: 23.00 },
@@ -161,364 +140,428 @@ export default function Dashboard() {
     { name: 'Rogers New Flex', rate: 21.00 },
   ]
 
-  const scorecardItems = [
-    { label: 'New Construction (2025)', score: 9, detail: 'Brand new, modern spec' },
-    { label: 'Market Vacancy (6.4%)', score: 8, detail: 'Below natural vacancy rate' },
-    { label: 'Rent vs. Market', score: 7, detail: 'In-line with flex comps' },
-    { label: 'Location (Rogers/NWA)', score: 8, detail: 'Strong growth corridor' },
-    { label: 'Flex Configuration', score: 8, detail: 'Multi-tenant capable' },
-    { label: 'Absorption Trend', score: 7, detail: 'Positive & accelerating' },
-  ]
-  const avgScore = (scorecardItems.reduce((a,b) => a + b.score, 0) / scorecardItems.length).toFixed(1)
-
   return (
-    <div className="min-h-screen px-4 py-8 md:px-8 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <header className="mb-8">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Property Valuation Report</h1>
-              <Badge color="#10b981">LIVE</Badge>
-            </div>
-            <p className="text-[#94a3b8] text-lg">{SUBJECT.address}</p>
-          </div>
-          <div className="text-right text-sm text-[#64748b]">
-            <div>Prepared for: <span className="text-[#f1f5f9]">Nick @ Appreciate</span></div>
-            <div>Date: <span className="text-[#f1f5f9]">March 25, 2026</span></div>
-            <div className="mt-1"><Badge color="#f59e0b">Purchase Analysis</Badge></div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white text-[#0f172a]">
 
-        {/* Quick Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-[#111827] border border-[#1e293b] rounded-2xl p-5">
-          <Metric label="Property Type" value="Flex Industrial" sub="Office · Retail · Warehouse" />
-          <Metric label="Total SF" value={fmtNum(SUBJECT.totalSF)} sub={`${SUBJECT.availableSpaces} spaces available`} />
-          <Metric label="Year Built" value={SUBJECT.yearBuilt} sub="New construction" color="#10b981" />
-          <Metric label="Asking Rent" value={`$${SUBJECT.askingRentLow}–$${SUBJECT.askingRentHigh}/SF`} sub="Per year (NNN)" />
-          <Metric label="Est. Value (Base)" value={fmt(scenarios.base.value)} sub={`${fmtDec(scenarios.base.ppsf)}/SF`} color="#3b82f6" />
+      {/* ── HEADER ── */}
+      <header className="border-b border-[#e2e8f0]">
+        <div className="max-w-[1200px] mx-auto px-6 py-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#64748b] mb-1">Investment Memorandum</p>
+              <h1 className="text-2xl font-semibold tracking-tight text-[#0f172a]">6361 S Oldridge Pl</h1>
+              <p className="text-sm text-[#64748b] mt-0.5">Rogers, AR 72758</p>
+            </div>
+            <div className="text-right text-xs text-[#94a3b8] space-y-0.5">
+              <div>Prepared for <span className="text-[#0f172a] font-medium">Nick @ Appreciate</span></div>
+              <div>March 25, 2026</div>
+              <a href={SUBJECT.loopnetUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[10px] tracking-[0.15em] uppercase font-medium text-[#1e40af] hover:text-[#1e3a8a] transition-colors">
+                View on LoopNet →
+              </a>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Scenario Toggle */}
-      <div className="flex items-center gap-2 mb-6">
-        <span className="text-sm text-[#64748b] mr-2">Scenario:</span>
-        {['conservative', 'base', 'optimistic'].map(s => (
-          <button
-            key={s}
-            onClick={() => setActiveScenario(s)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeScenario === s
-                ? 'bg-[#3b82f6] text-white shadow-lg shadow-blue-500/20'
-                : 'bg-[#1e293b] text-[#94a3b8] hover:bg-[#253346] hover:text-[#f1f5f9]'
-            }`}
-          >
-            {s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
+      <main className="max-w-[1200px] mx-auto px-6 py-8">
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
-        {/* ── Income Approach Valuation ── */}
-        <Card className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#3b82f6]"></span>
-            Income Approach Valuation
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Metric label="Gross Potential Income" value={fmt(v.gpi)} />
-            <Metric label="Less Vacancy" value={`(${fmt(v.vacancy)})`} color="#ef4444" />
-            <Metric label="Less OpEx" value={`(${fmt(v.opex)})`} color="#f59e0b" />
-            <Metric label="Net Operating Income" value={fmt(v.noi)} color="#10b981" />
+        {/* ── 01 PROPERTY OVERVIEW ── */}
+        <section className="mb-10">
+          <SectionLabel number="01" title="Property Overview" />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-[#e2e8f0] border border-[#e2e8f0] rounded-lg overflow-hidden">
+            <KV label="Property Type" value={SUBJECT.type} sub={SUBJECT.subtype} />
+            <KV label="Rentable Area" value={`${fmtNum(SUBJECT.totalSF)} SF`} sub={`${SUBJECT.availableSpaces} spaces available`} />
+            <KV label="Year Built" value="2025" sub="New construction" accent />
+            <KV label="Asking Rent" value={`$${SUBJECT.askingRentLow}\u2013$${SUBJECT.askingRentHigh}/SF`} sub="Per annum (NNN)" />
+            <KV label="Developer" value="NWA Industrial" sub="Crossland Construction" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-[#0d1320] rounded-xl p-4">
-            <Metric label="Cap Rate Applied" value={fmtPct(activeScenario === 'conservative' ? 7.50 : activeScenario === 'base' ? 7.03 : 6.50)} />
-            <Metric label="Indicated Value" value={fmt(v.value)} color="#3b82f6" />
-            <Metric label="Price per SF" value={fmtDec(v.ppsf)} color="#8b5cf6" />
+        </section>
+
+        {/* ── 02 VALUATION SUMMARY ── */}
+        <section className="mb-10">
+          <SectionLabel number="02" title="Valuation Summary" subtitle="Income approach via direct capitalization" />
+
+          <div className="flex items-center gap-1 mb-5 bg-[#f8fafc] border border-[#e2e8f0] rounded-md p-0.5 w-fit">
+            {['conservative', 'base', 'optimistic'].map(s => (
+              <button
+                key={s}
+                onClick={() => setActiveScenario(s)}
+                className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${
+                  activeScenario === s
+                    ? 'bg-white text-[#0f172a] shadow-sm border border-[#e2e8f0]'
+                    : 'text-[#64748b] hover:text-[#0f172a]'
+                }`}
+              >
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
           </div>
-        </Card>
 
-        {/* ── Income Breakdown Pie ── */}
-        <Card>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10b981]"></span>
-            Income Breakdown
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={incomeBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                {incomeBreakdown.map((_, i) => <Cell key={i} fill={['#10b981','#f59e0b','#ef4444'][i]} />)}
-              </Pie>
-              <Tooltip content={<CustomTooltip formatter={fmt} />} />
-              <Legend formatter={(v) => <span className="text-[#94a3b8] text-xs">{v}</span>} />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8]">
+                    <th className="text-left py-2 font-medium">Line Item</th>
+                    <th className="text-right py-2 font-medium">Amount</th>
+                    <th className="text-right py-2 font-medium">$/SF</th>
+                    <th className="text-right py-2 font-medium">Assumptions</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-[13px]">
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 text-[#475569] font-sans">Gross Potential Income</td>
+                    <td className="py-2.5 text-right">{fmt(v.gpi)}</td>
+                    <td className="py-2.5 text-right text-[#64748b]">{fmtDec(v.rentPSF)}</td>
+                    <td className="py-2.5 text-right text-[#94a3b8] text-xs font-sans">{fmtNum(SUBJECT.totalSF)} SF x ${v.rentPSF.toFixed(2)}/SF</td>
+                  </tr>
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 text-[#475569] font-sans pl-4">Less: Vacancy &amp; Credit Loss</td>
+                    <td className="py-2.5 text-right text-[#dc2626]">({fmt(v.vacancy)})</td>
+                    <td className="py-2.5 text-right text-[#dc2626]">({fmtDec(v.vacancy / SUBJECT.totalSF)})</td>
+                    <td className="py-2.5 text-right text-[#94a3b8] text-xs font-sans">{v.vacancyPct}% vacancy rate</td>
+                  </tr>
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 text-[#475569] font-sans">Effective Gross Income</td>
+                    <td className="py-2.5 text-right">{fmt(v.egi)}</td>
+                    <td className="py-2.5 text-right text-[#64748b]">{fmtDec(v.egi / SUBJECT.totalSF)}</td>
+                    <td className="py-2.5"></td>
+                  </tr>
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 text-[#475569] font-sans pl-4">Less: Operating Expenses</td>
+                    <td className="py-2.5 text-right text-[#dc2626]">({fmt(v.opex)})</td>
+                    <td className="py-2.5 text-right text-[#dc2626]">({fmtDec(v.opex / SUBJECT.totalSF)})</td>
+                    <td className="py-2.5 text-right text-[#94a3b8] text-xs font-sans">{v.opexPct}% of EGI</td>
+                  </tr>
+                  <tr className="border-t-2 border-[#0f172a] font-semibold">
+                    <td className="py-2.5 font-sans">Net Operating Income</td>
+                    <td className="py-2.5 text-right text-[#16a34a]">{fmt(v.noi)}</td>
+                    <td className="py-2.5 text-right text-[#16a34a]">{fmtDec(v.noi / SUBJECT.totalSF)}</td>
+                    <td className="py-2.5"></td>
+                  </tr>
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 text-[#475569] font-sans">Capitalization Rate</td>
+                    <td className="py-2.5 text-right">{fmtPct(v.capRate)}</td>
+                    <td className="py-2.5"></td>
+                    <td className="py-2.5 text-right text-[#94a3b8] text-xs font-sans">Blended national/central</td>
+                  </tr>
+                  <tr className="border-t-2 border-[#1e40af] bg-[#f8fafc]">
+                    <td className="py-3 font-semibold font-sans text-[#1e40af]">Indicated Value</td>
+                    <td className="py-3 text-right font-semibold text-[#1e40af] text-base">{fmt(v.value)}</td>
+                    <td className="py-3 text-right font-semibold text-[#1e40af]">{fmtDec(v.ppsf)}/SF</td>
+                    <td className="py-3"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-        {/* ── Scenario Comparison ── */}
-        <Card className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#8b5cf6]"></span>
-            Valuation Scenarios
-          </h2>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={scenarioChartData} barGap={8}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={v => `$${(v/1e6).toFixed(1)}M`} />
-              <Tooltip content={({ active, payload, label }) => {
-                if (!active || !payload?.length) return null
-                const d = payload[0]?.payload
-                return (
-                  <div className="bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm shadow-xl">
-                    <div className="text-[#94a3b8] text-xs mb-1">{label}</div>
-                    <div className="text-[#3b82f6] font-semibold">{fmt(d.value)}</div>
-                    <div className="text-[#10b981] text-xs">NOI: {fmt(d.noi)}</div>
-                    <div className="text-[#8b5cf6] text-xs">{fmtDec(d.ppsf)}/SF</div>
-                  </div>
-                )
-              }} />
-              <Bar dataKey="value" radius={[6,6,0,0]}>
-                {scenarioChartData.map((_, i) => <Cell key={i} fill={['#f59e0b','#3b82f6','#10b981'][i]} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="grid grid-cols-3 gap-4 mt-4 text-center text-sm">
-            <div className="bg-[#0d1320] rounded-lg p-3">
-              <div className="text-[#f59e0b] font-bold">{fmt(scenarios.conservative.value)}</div>
-              <div className="text-[#64748b] text-xs">7.50% cap · 10% vac</div>
-            </div>
-            <div className="bg-[#0d1320] rounded-lg p-3 ring-1 ring-[#3b82f6]">
-              <div className="text-[#3b82f6] font-bold">{fmt(scenarios.base.value)}</div>
-              <div className="text-[#64748b] text-xs">7.03% cap · 6.4% vac</div>
-            </div>
-            <div className="bg-[#0d1320] rounded-lg p-3">
-              <div className="text-[#10b981] font-bold">{fmt(scenarios.optimistic.value)}</div>
-              <div className="text-[#64748b] text-xs">6.50% cap · 4% vac</div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-2">Income Allocation</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={incomeBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+                    {incomeBreakdown.map((_, i) => <Cell key={i} fill={['#1e40af','#94a3b8','#cbd5e1'][i]} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip formatter={fmt} />} />
+                  <Legend formatter={(val) => <span className="text-[11px] text-[#64748b]">{val}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        </Card>
 
-        {/* ── Investment Scorecard ── */}
-        <Card>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
-            Investment Scorecard
-            <span className="ml-auto text-2xl font-bold text-[#10b981]">{avgScore}/10</span>
-          </h2>
-          <div className="space-y-3">
-            {scorecardItems.map((item, i) => (
-              <div key={i}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-[#94a3b8]">{item.label}</span>
-                  <span className="font-semibold" style={{ color: item.score >= 8 ? '#10b981' : item.score >= 6 ? '#f59e0b' : '#ef4444' }}>{item.score}/10</span>
-                </div>
-                <div className="w-full h-1.5 bg-[#1e293b] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${item.score * 10}%`, background: item.score >= 8 ? '#10b981' : item.score >= 6 ? '#f59e0b' : '#ef4444' }} />
-                </div>
+          {/* Scenario cards */}
+          <div className="grid grid-cols-3 gap-px bg-[#e2e8f0] border border-[#e2e8f0] rounded-lg overflow-hidden mt-6">
+            {[
+              { key: 'conservative', label: 'Conservative', color: '#64748b' },
+              { key: 'base', label: 'Base Case', color: '#1e40af' },
+              { key: 'optimistic', label: 'Optimistic', color: '#16a34a' },
+            ].map(s => (
+              <div
+                key={s.key}
+                className={`bg-white p-4 text-center cursor-pointer hover:bg-[#f8fafc] transition-colors ${activeScenario === s.key ? 'ring-2 ring-inset' : ''}`}
+                style={activeScenario === s.key ? { boxShadow: `inset 0 0 0 2px ${s.color}` } : {}}
+                onClick={() => setActiveScenario(s.key)}
+              >
+                <div className="text-[10px] tracking-[0.15em] uppercase font-medium text-[#94a3b8] mb-1">{s.label}</div>
+                <div className="text-xl font-semibold font-mono" style={{ color: s.color }}>{fmt(scenarios[s.key].value)}</div>
+                <div className="text-xs text-[#94a3b8] mt-0.5 font-mono">{fmtDec(scenarios[s.key].ppsf)}/SF</div>
+                <div className="text-[10px] text-[#cbd5e1] mt-1">{scenarios[s.key].capRate}% cap &middot; {scenarios[s.key].vacancyPct}% vac &middot; {scenarios[s.key].opexPct}% opex</div>
               </div>
             ))}
           </div>
-        </Card>
+        </section>
 
-        {/* ── Comparable Sales (Price/SF) ── */}
-        <Card className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#06b6d4]"></span>
-            Comparable Sales — Price per SF
-          </h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={compChartData} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} angle={-15} textAnchor="end" height={50} />
-              <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={v => `$${v}`} />
-              <Tooltip content={({ active, payload, label }) => {
-                if (!active || !payload?.length) return null
-                const d = payload[0]?.payload
-                return (
-                  <div className="bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm shadow-xl">
-                    <div className="text-[#94a3b8] text-xs mb-1">{label}</div>
-                    <div className="text-[#3b82f6] font-semibold">${d.ppsf}/SF</div>
-                    <div className="text-[#64748b] text-xs">{(d.sf).toFixed(0)}K SF</div>
-                  </div>
-                )
-              }} />
-              <ReferenceLine y={scenarios.base.ppsf} stroke="#3b82f6" strokeDasharray="5 5" label={{ value: `Subject est: $${Math.round(scenarios.base.ppsf)}/SF`, fill: '#3b82f6', fontSize: 11, position: 'top' }} />
-              <Bar dataKey="ppsf" radius={[6,6,0,0]}>
-                {compChartData.map((d, i) => <Cell key={i} fill={d.isSubject ? '#3b82f6' : CHART_COLORS[i % CHART_COLORS.length]} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+        {/* ── 03 COMPARABLE SALES ── */}
+        <section className="mb-10">
+          <SectionLabel number="03" title="Comparable Sales Analysis" subtitle="Recent transactions in the NWA market" />
 
-        {/* ── Rent Comparables ── */}
-        <Card>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10b981]"></span>
-            Rent Comparables ($/SF/YR)
-          </h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={rentCompData} layout="vertical" barSize={14}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={v => `$${v}`} domain={[0, 25]} />
-              <YAxis dataKey="name" type="category" tick={{ fill: '#94a3b8', fontSize: 10 }} width={110} />
-              <Tooltip content={<CustomTooltip formatter={v => `$${v.toFixed(2)}/SF`} />} />
-              <Bar dataKey="rate" radius={[0,6,6,0]}>
-                {rentCompData.map((d, i) => <Cell key={i} fill={d.name.startsWith('Subject') ? '#3b82f6' : '#334155'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* ── Market Health Radar ── */}
-        <Card>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#8b5cf6]"></span>
-            NWA Market Health
-          </h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <RadarChart data={marketMetrics} outerRadius={85}>
-              <PolarGrid stroke="#1e293b" />
-              <PolarAngleAxis dataKey="metric" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-              <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 10]} />
-              <Radar name="Score" dataKey="value" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.25} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* ── Comp Details Table ── */}
-        <Card className="lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
-            Comparable Sales Detail
-          </h2>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto border border-[#e2e8f0] rounded-lg">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e293b] text-[#64748b] text-xs uppercase tracking-wider">
-                  <th className="text-left py-3 pr-4">Property</th>
-                  <th className="text-left py-3 pr-4">Type</th>
-                  <th className="text-right py-3 pr-4">Size (SF)</th>
-                  <th className="text-right py-3 pr-4">Sale Price</th>
-                  <th className="text-right py-3 pr-4">$/SF</th>
-                  <th className="text-right py-3">Date</th>
+                <tr className="bg-[#f8fafc] text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">
+                  <th className="text-left py-3 px-4">Property</th>
+                  <th className="text-left py-3 px-3">Type</th>
+                  <th className="text-right py-3 px-3">Size (SF)</th>
+                  <th className="text-right py-3 px-3">Sale Price</th>
+                  <th className="text-right py-3 px-3">$/SF</th>
+                  <th className="text-right py-3 px-4">Date</th>
                 </tr>
               </thead>
-              <tbody>
-                {COMPS.map(c => (
-                  <tr key={c.id} className="border-b border-[#1e293b]/50 hover:bg-[#1a2332] transition-colors">
-                    <td className="py-3 pr-4">
-                      <div className="font-medium">{c.name}</div>
-                      <div className="text-[#64748b] text-xs">{c.address}</div>
+              <tbody className="font-mono text-[13px]">
+                {COMPS.map((c, i) => (
+                  <tr key={c.id} className={`border-t border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors ${i % 2 !== 0 ? 'bg-[#fafbfc]' : ''}`}>
+                    <td className="py-3 px-4 font-sans">
+                      <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[#1e40af] hover:underline font-medium text-sm">{c.name}</a>
+                      <div className="text-[11px] text-[#94a3b8]">{c.address}</div>
                     </td>
-                    <td className="py-3 pr-4"><Badge color={c.type.includes('Industrial') ? '#10b981' : '#8b5cf6'}>{c.type}</Badge></td>
-                    <td className="text-right py-3 pr-4 font-mono">{fmtNum(c.sf)}</td>
-                    <td className="text-right py-3 pr-4 font-mono">{fmt(c.salePrice)}</td>
-                    <td className="text-right py-3 pr-4 font-mono font-semibold text-[#3b82f6]">${c.ppsf}</td>
-                    <td className="text-right py-3 text-[#94a3b8]">{c.date}</td>
+                    <td className="py-3 px-3">
+                      <span className="inline-block text-[10px] tracking-wider uppercase font-medium px-2 py-0.5 rounded bg-[#f1f5f9] text-[#64748b] font-sans">{c.type}</span>
+                    </td>
+                    <td className="text-right py-3 px-3 text-[#475569]">{fmtNum(c.sf)}</td>
+                    <td className="text-right py-3 px-3 text-[#475569]">{fmt(c.salePrice)}</td>
+                    <td className="text-right py-3 px-3 font-semibold text-[#0f172a]">${c.ppsf}</td>
+                    <td className="text-right py-3 px-4 text-[#94a3b8] font-sans text-xs">{c.date}</td>
                   </tr>
                 ))}
-                <tr className="bg-[#0d1320] font-semibold">
-                  <td className="py-3 pr-4">
-                    <div>Subject Property (est.)</div>
-                    <div className="text-[#64748b] text-xs font-normal">{SUBJECT.address}</div>
+                <tr className="border-t-2 border-[#1e40af] bg-[#eff6ff]">
+                  <td className="py-3 px-4 font-sans">
+                    <a href={SUBJECT.loopnetUrl} target="_blank" rel="noopener noreferrer" className="text-[#1e40af] hover:underline font-semibold text-sm">Subject Property (est.)</a>
+                    <div className="text-[11px] text-[#64748b]">{SUBJECT.address}</div>
                   </td>
-                  <td className="py-3 pr-4"><Badge color="#3b82f6">Flex Industrial</Badge></td>
-                  <td className="text-right py-3 pr-4 font-mono">{fmtNum(SUBJECT.totalSF)}</td>
-                  <td className="text-right py-3 pr-4 font-mono text-[#3b82f6]">{fmt(scenarios.base.value)}</td>
-                  <td className="text-right py-3 pr-4 font-mono text-[#3b82f6]">${Math.round(scenarios.base.ppsf)}</td>
-                  <td className="text-right py-3 text-[#94a3b8]">—</td>
+                  <td className="py-3 px-3">
+                    <span className="inline-block text-[10px] tracking-wider uppercase font-medium px-2 py-0.5 rounded bg-[#dbeafe] text-[#1e40af] font-sans">Flex Industrial</span>
+                  </td>
+                  <td className="text-right py-3 px-3 text-[#1e40af] font-semibold">{fmtNum(SUBJECT.totalSF)}</td>
+                  <td className="text-right py-3 px-3 text-[#1e40af] font-semibold">{fmt(scenarios.base.value)}</td>
+                  <td className="text-right py-3 px-3 font-bold text-[#1e40af]">${Math.round(scenarios.base.ppsf)}</td>
+                  <td className="text-right py-3 px-4 text-[#64748b] font-sans text-xs">&mdash;</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </Card>
 
-        {/* ── Key Market Metrics ── */}
-        <Card>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#06b6d4]"></span>
-            Key Market Metrics
-          </h2>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">NWA Industrial Vacancy</span>
-              <span className="font-semibold text-[#10b981]">{fmtPct(MARKET_DATA.nwaIndustrialVacancy)}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">Avg Warehouse Rent</span>
-              <span className="font-semibold">${MARKET_DATA.avgWarehouseRent}/SF</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">Rent Growth (YoY)</span>
-              <span className="font-semibold text-[#10b981]">+{fmtPct(MARKET_DATA.warehouseRentGrowth)}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">Flex Rent Range</span>
-              <span className="font-semibold">${MARKET_DATA.flexRentRange.low}–${MARKET_DATA.flexRentRange.high}/SF</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">Natl Flex Cap Rate</span>
-              <span className="font-semibold">{fmtPct(MARKET_DATA.nationalFlexCapRate)}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">Central Region Cap Rate</span>
-              <span className="font-semibold">{fmtPct(MARKET_DATA.centralRegionFlexCapRate)}</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b border-[#1e293b]/50">
-              <span className="text-[#94a3b8] text-sm">New Supply (2025)</span>
-              <span className="font-semibold">{(MARKET_DATA.newSupply2025SF / 1e6).toFixed(1)}M SF</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-[#94a3b8] text-sm">Net Absorption (H2 '25)</span>
-              <span className="font-semibold text-[#10b981]">+{fmtNum(MARKET_DATA.positiveAbsorptionH2)} SF</span>
-            </div>
+          {/* Price/SF chart */}
+          <div className="mt-6 border border-[#e2e8f0] rounded-lg p-5 bg-[#fafbfc]">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-3">Price per Square Foot Comparison</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={compChartData} barGap={6}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={val => `$${val}`} axisLine={false} tickLine={false} />
+                <Tooltip content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null
+                  return (
+                    <div className="bg-white border border-[#e2e8f0] rounded px-3 py-2 text-sm shadow-lg">
+                      <div className="text-[#64748b] text-xs mb-1">{label}</div>
+                      <div className="font-semibold text-[#0f172a]">${payload[0].value}/SF</div>
+                    </div>
+                  )
+                }} />
+                <ReferenceLine y={Math.round(scenarios.base.ppsf)} stroke="#1e40af" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Subject: $${Math.round(scenarios.base.ppsf)}/SF`, fill: '#1e40af', fontSize: 10, position: 'insideTopRight' }} />
+                <Bar dataKey="ppsf" radius={[3,3,0,0]} maxBarSize={48}>
+                  {compChartData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        </Card>
+        </section>
 
-        {/* ── Assumptions & Notes ── */}
-        <Card className="lg:col-span-3">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#64748b]"></span>
-            Assumptions, Notes & Recommendation
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6 text-sm text-[#94a3b8]">
-            <div>
-              <h3 className="text-[#f1f5f9] font-semibold mb-2">Valuation Methodology</h3>
-              <p className="mb-2">Income approach using direct capitalization. Base case uses midpoint rent of $17.50/SF (NNN), market vacancy of 6.4%, 30% OpEx ratio, and 7.03% blended cap rate (national flex 6.93% / central region 7.13%).</p>
-              <p>Comparable sales approach confirms range: industrial comps trade at $100–$168/SF, with newer flex assets commanding premiums.</p>
-            </div>
-            <div>
-              <h3 className="text-[#f1f5f9] font-semibold mb-2">Key Considerations</h3>
-              <p className="mb-2">• New 2025 construction by NWA Industrial / Crossland — minimal deferred maintenance risk.</p>
-              <p className="mb-2">• NWA flex market undersupplied for small-bay &lt;100K SF; strong tenant demand from Walmart ecosystem.</p>
-              <p>• Vacancy declined from 10.4% → 6.1% in H2 2025, signaling tightening market.</p>
-            </div>
-            <div>
-              <h3 className="text-[#f1f5f9] font-semibold mb-2">Recommendation</h3>
-              <div className="bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl p-4 mb-2">
-                <div className="text-[#10b981] font-bold text-lg mb-1">Favorable — Worth Pursuing</div>
-                <p className="text-[#94a3b8]">New-build flex in an undersupplied, growing market with strong institutional demand. Base valuation of {fmt(scenarios.base.value)} ({fmtDec(scenarios.base.ppsf)}/SF) is well-supported by comps. Negotiate based on lease-up risk for a purchase below {fmt(scenarios.conservative.value)}.</p>
+        {/* ── 04 MARKET CONTEXT ── */}
+        <section className="mb-10">
+          <SectionLabel number="04" title="Market Context" subtitle="Northwest Arkansas industrial & flex market" />
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="border border-[#e2e8f0] rounded-lg overflow-hidden">
+              <div className="bg-[#f8fafc] px-4 py-2.5 border-b border-[#e2e8f0]">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Key Market Indicators</p>
               </div>
-              <p className="text-xs text-[#64748b]">This analysis is for informational purposes only and should not be considered financial advice. Engage a certified appraiser for a formal valuation.</p>
+              <div className="divide-y divide-[#f1f5f9]">
+                <MetricRow label="NWA Industrial Vacancy" value={fmtPct(MARKET_DATA.nwaIndustrialVacancy)} trend="down" />
+                <MetricRow label="Avg Warehouse Rent" value={`$${MARKET_DATA.avgWarehouseRent}/SF`} />
+                <MetricRow label="Rent Growth (YoY)" value={`+${fmtPct(MARKET_DATA.warehouseRentGrowth)}`} trend="up" />
+                <MetricRow label="Flex Rent Range" value={`$${MARKET_DATA.flexRentRange.low}\u2013$${MARKET_DATA.flexRentRange.high}/SF`} />
+                <MetricRow label="National Flex Cap Rate" value={fmtPct(MARKET_DATA.nationalFlexCapRate)} />
+                <MetricRow label="Central Region Cap Rate" value={fmtPct(MARKET_DATA.centralRegionFlexCapRate)} />
+                <MetricRow label="New Supply (2025)" value={`${(MARKET_DATA.newSupply2025SF / 1e6).toFixed(1)}M SF`} />
+                <MetricRow label="Net Absorption (H2 '25)" value={`+${fmtNum(MARKET_DATA.positiveAbsorptionH2)} SF`} trend="up" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="border border-[#e2e8f0] rounded-lg p-4">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-3">Rent Comparables ($/SF/yr)</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={rentCompData} layout="vertical" barSize={12}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                    <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 10 }} tickFormatter={val => `$${val}`} domain={[0, 25]} axisLine={false} tickLine={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fill: '#64748b', fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ChartTooltip formatter={val => `$${val.toFixed(2)}/SF`} />} />
+                    <Bar dataKey="rate" radius={[0,3,3,0]}>
+                      {rentCompData.map((d, i) => <Cell key={i} fill={d.isSubject ? '#1e40af' : '#cbd5e1'} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="border border-[#e2e8f0] rounded-lg p-4">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-2">Market Health Assessment</p>
+                <ResponsiveContainer width="100%" height={200}>
+                  <RadarChart data={radarData} outerRadius={70}>
+                    <PolarGrid stroke="#e2e8f0" />
+                    <PolarAngleAxis dataKey="metric" tick={{ fill: '#64748b', fontSize: 9 }} />
+                    <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 10]} />
+                    <Radar name="Score" dataKey="value" stroke="#1e40af" fill="#1e40af" fillOpacity={0.08} strokeWidth={1.5} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
-        </Card>
+        </section>
 
-        {/* ── Data Sources ── */}
-        <Card className="lg:col-span-3">
-          <h2 className="text-sm font-semibold mb-2 text-[#64748b]">Data Sources</h2>
-          <p className="text-xs text-[#475569]">
-            LoopNet listing #32391011 · Cushman & Wakefield | Sage Partners NWA Industrial Report · Rogers AR Building Permits (Dec 2024, Mar 2025) · Talk Business & Politics transaction reports · FRED Fayetteville-Springdale-Rogers MSA data · Reonomy · National cap rate data (IRR Mid-Year 2024, CBRE H1 2024) · RentCafe · Redfin · Zillow
-          </p>
-        </Card>
-      </div>
+        {/* ── 05 INVESTMENT SCORECARD ── */}
+        <section className="mb-10">
+          <SectionLabel number="05" title="Investment Scorecard" />
+          <Scorecard />
+        </section>
 
-      <footer className="mt-8 text-center text-xs text-[#475569] pb-8">
-        Built for Nick @ Appreciate · {SUBJECT.address} · Generated March 25, 2026
+        {/* ── 06 RECOMMENDATION ── */}
+        <section className="mb-10">
+          <SectionLabel number="06" title="Conclusion & Recommendation" />
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="space-y-3 text-sm text-[#475569] leading-relaxed">
+              <h3 className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Methodology</h3>
+              <p>Income approach using direct capitalization. Base case applies the midpoint asking rent of $17.50/SF (NNN), market vacancy of 6.4%, a 30% operating expense ratio, and a 7.03% blended cap rate derived from national flex (6.93%) and central region (7.13%) benchmarks.</p>
+              <p>The comparable sales approach corroborates the range: industrial comps in the NWA market trade between $100{'\u2013'}$168/SF, with newer flex assets commanding premiums over older warehouse stock.</p>
+            </div>
+            <div className="space-y-3 text-sm text-[#475569] leading-relaxed">
+              <h3 className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Key Considerations</h3>
+              <p>New 2025 construction by NWA Industrial / Crossland eliminates near-term deferred maintenance risk and positions the asset favorably for institutional tenants.</p>
+              <p>The NWA flex market remains undersupplied for small-bay product under 100K SF, with strong demand driven by the Walmart vendor ecosystem. Vacancy compressed from 10.4% to 6.1% in H2 2025, signaling a tightening market.</p>
+            </div>
+            <div>
+              <h3 className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-4">Recommendation</h3>
+              <div className="border-2 border-[#16a34a] rounded-lg p-5 bg-[#f0fdf4]">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-[#16a34a]"></span>
+                  <span className="text-[#15803d] font-semibold text-base">Favorable — Worth Pursuing</span>
+                </div>
+                <p className="text-sm text-[#475569] leading-relaxed">
+                  New-build flex in an undersupplied, growing market with strong institutional demand. Base valuation of {fmt(scenarios.base.value)} ({fmtDec(scenarios.base.ppsf)}/SF) is well-supported by comparable transactions. Consider negotiating below {fmt(scenarios.conservative.value)} to account for lease-up risk.
+                </p>
+              </div>
+              <p className="text-[11px] text-[#94a3b8] mt-3 leading-relaxed">This analysis is for informational purposes only and does not constitute financial advice. Engage a certified appraiser and legal counsel before transacting.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SOURCES ── */}
+        <section className="mb-6">
+          <div className="border-t border-[#e2e8f0] pt-6">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-3">Sources & References</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+              {SOURCES.map((s, i) => (
+                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#64748b] hover:text-[#1e40af] transition-colors underline decoration-[#e2e8f0] hover:decoration-[#1e40af]">
+                  {s.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-[#e2e8f0] bg-[#f8fafc]">
+        <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] text-[#94a3b8]">
+          <span>Prepared for Nick @ Appreciate</span>
+          <span>6361 S Oldridge Pl, Rogers, AR 72758</span>
+          <span>Generated March 25, 2026</span>
+        </div>
       </footer>
+    </div>
+  )
+}
+
+// ─── SUBCOMPONENTS ──────────────────────────────────────────────────────────
+
+function SectionLabel({ number, title, subtitle }) {
+  return (
+    <div className="mb-4 flex items-baseline gap-3">
+      <span className="text-[10px] tracking-[0.15em] text-[#cbd5e1] font-mono">{number}</span>
+      <div>
+        <h2 className="text-lg font-semibold text-[#0f172a]">{title}</h2>
+        {subtitle && <p className="text-xs text-[#94a3b8] mt-0.5">{subtitle}</p>}
+      </div>
+    </div>
+  )
+}
+
+function KV({ label, value, sub, accent }) {
+  return (
+    <div className="bg-white px-4 py-3.5">
+      <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">{label}</div>
+      <div className={`text-base font-semibold ${accent ? 'text-[#16a34a]' : 'text-[#0f172a]'}`}>{value}</div>
+      {sub && <div className="text-[11px] text-[#94a3b8] mt-0.5">{sub}</div>}
+    </div>
+  )
+}
+
+function MetricRow({ label, value, trend }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <span className="text-sm text-[#475569]">{label}</span>
+      <span className="font-mono text-sm font-medium text-[#0f172a] flex items-center gap-1.5">
+        {trend === 'up' && <span className="text-[#16a34a] text-[10px]">&#9650;</span>}
+        {trend === 'down' && <span className="text-[#16a34a] text-[10px]">&#9660;</span>}
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function Scorecard() {
+  const items = [
+    { label: 'New Construction (2025)', score: 9, note: 'Brand new, modern spec — minimal CapEx' },
+    { label: 'Market Vacancy (6.4%)', score: 8, note: 'Below natural vacancy rate' },
+    { label: 'Rent vs. Market Comps', score: 7, note: 'In-line with NWA flex asking rents' },
+    { label: 'Location (Rogers/NWA)', score: 8, note: 'Walmart ecosystem growth corridor' },
+    { label: 'Flex Configuration', score: 8, note: 'Multi-tenant capable, diverse use' },
+    { label: 'Absorption Trend', score: 7, note: 'Positive and accelerating in H2 2025' },
+  ]
+  const avg = (items.reduce((a, b) => a + b.score, 0) / items.length).toFixed(1)
+
+  return (
+    <div className="border border-[#e2e8f0] rounded-lg overflow-hidden">
+      <div className="bg-[#f8fafc] px-4 py-3 border-b border-[#e2e8f0] flex items-center justify-between">
+        <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Weighted Assessment</p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-semibold text-[#0f172a] font-mono">{avg}</span>
+          <span className="text-sm text-[#94a3b8]">/10</span>
+        </div>
+      </div>
+      <div className="divide-y divide-[#f1f5f9]">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-4 px-4 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-[#0f172a]">{item.label}</div>
+              <div className="text-[11px] text-[#94a3b8]">{item.note}</div>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="w-24 h-1.5 bg-[#f1f5f9] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${item.score * 10}%`,
+                    backgroundColor: item.score >= 8 ? '#16a34a' : item.score >= 6 ? '#ca8a04' : '#dc2626',
+                  }}
+                />
+              </div>
+              <span className="text-sm font-mono font-semibold w-6 text-right" style={{ color: item.score >= 8 ? '#16a34a' : item.score >= 6 ? '#ca8a04' : '#dc2626' }}>
+                {item.score}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
