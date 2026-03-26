@@ -98,8 +98,25 @@ const ChartTooltip = ({ active, payload, label, formatter }) => {
 // ─── MAIN ───────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [activeScenario, setActiveScenario] = useState('base')
-  const v = scenarios[activeScenario]
+  const [rentPSF, setRentPSF] = useState(17.50)
+  const [vacancyPct, setVacancyPct] = useState(6.4)
+  const [opexPct, setOpexPct] = useState(30)
+  const [capRate, setCapRate] = useState(7.03)
+
+  const v = computeValuation(rentPSF, vacancyPct, opexPct, capRate)
+
+  const presets = {
+    conservative: { rent: 16.00, vacancy: 10, opex: 35, cap: 7.50 },
+    base: { rent: 17.50, vacancy: 6.4, opex: 30, cap: 7.03 },
+    optimistic: { rent: 19.00, vacancy: 4, opex: 25, cap: 6.50 },
+  }
+  const applyPreset = (key) => {
+    const p = presets[key]
+    setRentPSF(p.rent)
+    setVacancyPct(p.vacancy)
+    setOpexPct(p.opex)
+    setCapRate(p.cap)
+  }
 
   const compChartData = [...COMPS.map(c => ({
     name: c.name.length > 16 ? c.name.split(' ').slice(0,2).join(' ') : c.name,
@@ -107,15 +124,9 @@ export default function Dashboard() {
     fill: '#94a3b8',
   })), {
     name: 'Subject (est.)',
-    ppsf: Math.round(scenarios.base.ppsf),
+    ppsf: Math.round(v.ppsf),
     fill: '#1e40af',
   }]
-
-  const scenarioChartData = [
-    { name: 'Conservative', value: scenarios.conservative.value },
-    { name: 'Base Case', value: scenarios.base.value },
-    { name: 'Optimistic', value: scenarios.optimistic.value },
-  ]
 
   const incomeBreakdown = [
     { name: 'NOI', value: Math.round(v.noi) },
@@ -184,20 +195,62 @@ export default function Dashboard() {
         <section className="mb-10">
           <SectionLabel number="02" title="Valuation Summary" subtitle="Income approach via direct capitalization" />
 
-          <div className="flex items-center gap-1 mb-5 bg-[#f8fafc] border border-[#e2e8f0] rounded-md p-0.5 w-fit">
-            {['conservative', 'base', 'optimistic'].map(s => (
+          {/* Preset quick-select */}
+          <div className="flex items-center gap-2 mb-5">
+            <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mr-1">Presets:</span>
+            {[
+              { key: 'conservative', label: 'Conservative' },
+              { key: 'base', label: 'Base Case' },
+              { key: 'optimistic', label: 'Optimistic' },
+            ].map(s => (
               <button
-                key={s}
-                onClick={() => setActiveScenario(s)}
-                className={`px-4 py-1.5 rounded text-xs font-medium transition-all ${
-                  activeScenario === s
-                    ? 'bg-white text-[#0f172a] shadow-sm border border-[#e2e8f0]'
-                    : 'text-[#64748b] hover:text-[#0f172a]'
-                }`}
+                key={s.key}
+                onClick={() => applyPreset(s.key)}
+                className="px-3 py-1.5 rounded text-xs font-medium transition-all bg-[#f8fafc] border border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a] hover:border-[#cbd5e1]"
               >
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {s.label}
               </button>
             ))}
+          </div>
+
+          {/* Interactive Assumption Sliders */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Rent ($/SF)</label>
+                <span className="font-mono text-sm font-semibold text-[#0f172a]">${rentPSF.toFixed(2)}</span>
+              </div>
+              <input type="range" min="12" max="24" step="0.25" value={rentPSF} onChange={e => setRentPSF(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-[#e2e8f0] rounded-full appearance-none cursor-pointer accent-[#1e40af]" />
+              <div className="flex justify-between text-[10px] text-[#cbd5e1] mt-0.5"><span>$12</span><span>$24</span></div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Vacancy (%)</label>
+                <span className="font-mono text-sm font-semibold text-[#0f172a]">{vacancyPct.toFixed(1)}%</span>
+              </div>
+              <input type="range" min="0" max="20" step="0.5" value={vacancyPct} onChange={e => setVacancyPct(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-[#e2e8f0] rounded-full appearance-none cursor-pointer accent-[#1e40af]" />
+              <div className="flex justify-between text-[10px] text-[#cbd5e1] mt-0.5"><span>0%</span><span>20%</span></div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Expenses (%)</label>
+                <span className="font-mono text-sm font-semibold text-[#0f172a]">{opexPct.toFixed(0)}%</span>
+              </div>
+              <input type="range" min="10" max="50" step="1" value={opexPct} onChange={e => setOpexPct(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-[#e2e8f0] rounded-full appearance-none cursor-pointer accent-[#1e40af]" />
+              <div className="flex justify-between text-[10px] text-[#cbd5e1] mt-0.5"><span>10%</span><span>50%</span></div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Cap Rate (%)</label>
+                <span className="font-mono text-sm font-semibold text-[#0f172a]">{capRate.toFixed(2)}%</span>
+              </div>
+              <input type="range" min="5" max="10" step="0.05" value={capRate} onChange={e => setCapRate(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-[#e2e8f0] rounded-full appearance-none cursor-pointer accent-[#1e40af]" />
+              <div className="flex justify-between text-[10px] text-[#cbd5e1] mt-0.5"><span>5%</span><span>10%</span></div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -272,25 +325,27 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Scenario cards */}
+          {/* Scenario reference cards */}
           <div className="grid grid-cols-3 gap-px bg-[#e2e8f0] border border-[#e2e8f0] rounded-lg overflow-hidden mt-6">
             {[
               { key: 'conservative', label: 'Conservative', color: '#64748b' },
               { key: 'base', label: 'Base Case', color: '#1e40af' },
               { key: 'optimistic', label: 'Optimistic', color: '#16a34a' },
-            ].map(s => (
-              <div
-                key={s.key}
-                className={`bg-white p-4 text-center cursor-pointer hover:bg-[#f8fafc] transition-colors ${activeScenario === s.key ? 'ring-2 ring-inset' : ''}`}
-                style={activeScenario === s.key ? { boxShadow: `inset 0 0 0 2px ${s.color}` } : {}}
-                onClick={() => setActiveScenario(s.key)}
-              >
-                <div className="text-[10px] tracking-[0.15em] uppercase font-medium text-[#94a3b8] mb-1">{s.label}</div>
-                <div className="text-xl font-semibold font-mono" style={{ color: s.color }}>{fmt(scenarios[s.key].value)}</div>
-                <div className="text-xs text-[#94a3b8] mt-0.5 font-mono">{fmtDec(scenarios[s.key].ppsf)}/SF</div>
-                <div className="text-[10px] text-[#cbd5e1] mt-1">{scenarios[s.key].capRate}% cap &middot; {scenarios[s.key].vacancyPct}% vac &middot; {scenarios[s.key].opexPct}% opex</div>
-              </div>
-            ))}
+            ].map(s => {
+              const sv = scenarios[s.key]
+              return (
+                <div
+                  key={s.key}
+                  className="bg-white p-4 text-center cursor-pointer hover:bg-[#f8fafc] transition-colors"
+                  onClick={() => applyPreset(s.key)}
+                >
+                  <div className="text-[10px] tracking-[0.15em] uppercase font-medium text-[#94a3b8] mb-1">{s.label}</div>
+                  <div className="text-xl font-semibold font-mono" style={{ color: s.color }}>{fmt(sv.value)}</div>
+                  <div className="text-xs text-[#94a3b8] mt-0.5 font-mono">{fmtDec(sv.ppsf)}/SF</div>
+                  <div className="text-[10px] text-[#cbd5e1] mt-1">{sv.capRate}% cap &middot; {sv.vacancyPct}% vac &middot; {sv.opexPct}% opex</div>
+                </div>
+              )
+            })}
           </div>
         </section>
 
@@ -335,8 +390,8 @@ export default function Dashboard() {
                     <span className="inline-block text-[10px] tracking-wider uppercase font-medium px-2 py-0.5 rounded bg-[#dbeafe] text-[#1e40af] font-sans">Flex Industrial</span>
                   </td>
                   <td className="text-right py-3 px-3 text-[#1e40af] font-semibold">{fmtNum(SUBJECT.totalSF)}</td>
-                  <td className="text-right py-3 px-3 text-[#1e40af] font-semibold">{fmt(scenarios.base.value)}</td>
-                  <td className="text-right py-3 px-3 font-bold text-[#1e40af]">${Math.round(scenarios.base.ppsf)}</td>
+                  <td className="text-right py-3 px-3 text-[#1e40af] font-semibold">{fmt(v.value)}</td>
+                  <td className="text-right py-3 px-3 font-bold text-[#1e40af]">${Math.round(v.ppsf)}</td>
                   <td className="text-right py-3 px-4 text-[#64748b] font-sans text-xs">&mdash;</td>
                 </tr>
               </tbody>
@@ -360,12 +415,42 @@ export default function Dashboard() {
                     </div>
                   )
                 }} />
-                <ReferenceLine y={Math.round(scenarios.base.ppsf)} stroke="#1e40af" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Subject: $${Math.round(scenarios.base.ppsf)}/SF`, fill: '#1e40af', fontSize: 10, position: 'insideTopRight' }} />
+                <ReferenceLine y={Math.round(v.ppsf)} stroke="#1e40af" strokeDasharray="6 3" strokeWidth={1.5} label={{ value: `Subject: $${Math.round(v.ppsf)}/SF`, fill: '#1e40af', fontSize: 10, position: 'insideTopRight' }} />
                 <Bar dataKey="ppsf" radius={[3,3,0,0]} maxBarSize={48}>
                   {compChartData.map((d, i) => <Cell key={i} fill={d.fill} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Valuation Premium Bridge */}
+          <div className="mt-6 border border-[#e2e8f0] rounded-lg overflow-hidden">
+            <div className="bg-[#eff6ff] px-5 py-3 border-b border-[#dbeafe]">
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[#1e40af] font-semibold">Why the Subject Commands ${Math.round(v.ppsf)}/SF vs. Comp Average of ${Math.round(COMPS.reduce((a,c) => a + c.ppsf, 0) / COMPS.length)}/SF</p>
+            </div>
+            <div className="px-5 py-4 text-sm text-[#475569] leading-relaxed space-y-3">
+              <p className="font-medium text-[#0f172a]">The ${Math.round(v.ppsf)}/SF indicated value is derived from the <span className="text-[#1e40af]">income approach (NOI ÷ cap rate)</span>, not from averaging comp sale prices. Here is why the income approach produces a premium over raw comp $/SF:</p>
+              <div className="grid md:grid-cols-3 gap-4 mt-2">
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">1. Flex vs. Bulk Warehouse</div>
+                  <p className="text-[13px]">Most comps are older warehouse or portfolio deals at $55–$100/SF. Flex buildings with office finish command higher rents ($16–$19/SF NNN vs. $9–$10/SF warehouse), which directly increases NOI and therefore value per SF.</p>
+                </div>
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">2. New Construction Premium</div>
+                  <p className="text-[13px]">A 2025 build commands a premium over aged stock — no deferred maintenance, modern spec (clear heights, dock configuration), lower insurance, and higher tenant demand. The closest comp (Lowell Flex, 2022 build) traded at $123/SF.</p>
+                </div>
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">3. Size Premium</div>
+                  <p className="text-[13px]">At 38,225 SF, the subject is in the most competitive small-bay segment. The two smallest comps (Springdale 24.9K SF at $149/SF and N. Little Rock 23.5K SF at $67/SF) show that smaller product trades at wide price ranges, with quality assets on the high end.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-[#f8fafc] rounded-md p-3 mt-2">
+                <div className="flex-1">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">Reconciliation</div>
+                  <p className="text-[13px]">Comp-implied range (flex-adjusted): <span className="font-mono font-semibold text-[#0f172a]">$100–$149/SF</span>. Income-indicated value: <span className="font-mono font-semibold text-[#1e40af]">${Math.round(v.ppsf)}/SF</span>. The income approach produces a ~{Math.round(((v.ppsf / ((123 + 149) / 2)) - 1) * 100)}% premium over the best flex comps, reflecting the new-build advantage and tight market vacancy ({vacancyPct}%). Adjust the sliders above to test different assumptions.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -433,8 +518,8 @@ export default function Dashboard() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="space-y-3 text-sm text-[#475569] leading-relaxed">
               <h3 className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Methodology</h3>
-              <p>Income approach using direct capitalization. Base case applies the midpoint asking rent of $17.50/SF (NNN), market vacancy of 6.4%, a 30% operating expense ratio, and a 7.03% blended cap rate derived from national flex (6.93%) and central region (7.13%) benchmarks.</p>
-              <p>The comparable sales approach corroborates the range: industrial comps in the NWA market trade between $100{'\u2013'}$168/SF, with newer flex assets commanding premiums over older warehouse stock.</p>
+              <p><strong>Primary method: Income approach</strong> via direct capitalization. NOI is derived from 38,225 SF at $17.50/SF NNN rent (midpoint of $16–$19 asking range), less 6.4% market vacancy and 30% operating expenses. NOI is then capitalized at 7.03% (blended national flex 6.93% + central region 7.13%).</p>
+              <p><strong>Cross-check: Sales comparison.</strong> Comp average is ~$99/SF, but ranges from $55 (bulk NNN warehouse) to $149 (small-bay Springdale). The two most comparable flex sales — Lowell ($123/SF, 2022 build) and Springdale ($149/SF, 24.9K SF) — bracket the income-indicated value and support the premium for new, small-format flex.</p>
             </div>
             <div className="space-y-3 text-sm text-[#475569] leading-relaxed">
               <h3 className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Key Considerations</h3>
@@ -449,7 +534,7 @@ export default function Dashboard() {
                   <span className="text-[#15803d] font-semibold text-base">Favorable — Worth Pursuing</span>
                 </div>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  New-build flex in an undersupplied, growing market with strong institutional demand. Base valuation of {fmt(scenarios.base.value)} ({fmtDec(scenarios.base.ppsf)}/SF) is well-supported by comparable transactions. Consider negotiating below {fmt(scenarios.conservative.value)} to account for lease-up risk.
+                  New-build flex in an undersupplied, growing market with strong institutional demand. Current valuation of {fmt(v.value)} ({fmtDec(v.ppsf)}/SF) is well-supported by comparable transactions. Consider negotiating below {fmt(scenarios.conservative.value)} to account for lease-up risk.
                 </p>
               </div>
               <p className="text-[11px] text-[#94a3b8] mt-3 leading-relaxed">This analysis is for informational purposes only and does not constitute financial advice. Engage a certified appraiser and legal counsel before transacting.</p>
