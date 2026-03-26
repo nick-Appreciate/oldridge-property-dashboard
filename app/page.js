@@ -24,11 +24,12 @@ const SUBJECT = {
 }
 
 const COMPS = [
-  { id: 1, name: 'Bentonville Industrial', address: 'Hwy 12, Bentonville, AR', sf: 284896, salePrice: 31480000, ppsf: 110, date: 'Aug 2025', type: 'Industrial', url: 'https://www.loopnet.com/search/commercial-real-estate/bentonville-ar/for-sale/' },
-  { id: 2, name: 'Bentonville Mixed-Use', address: 'S Main & SW 8th, Bentonville, AR', sf: 8706, salePrice: 3500000, ppsf: 402, date: 'Nov 2025', type: 'Mixed-Use', url: 'https://www.loopnet.com/search/commercial-real-estate/bentonville-ar/for-sale/' },
-  { id: 3, name: 'Beau Terre Office Park', address: 'Beau Terre Blvd, Bentonville, AR', sf: 381197, salePrice: 44600000, ppsf: 117, date: 'Oct 2024', type: 'Office', url: 'https://www.loopnet.com/search/office-space-for-lease/bentonville-ar/for-sale/' },
-  { id: 4, name: 'Rogers/Bentonville Portfolio', address: 'Pinnacle Hills & S Walton Blvd', sf: 405000, salePrice: 68000000, ppsf: 168, date: 'Feb 2026', type: 'Office Portfolio', url: 'https://talkbusiness.net/' },
-  { id: 5, name: 'Fayetteville Industrial', address: 'Fayetteville, AR', sf: 150000, salePrice: 15000000, ppsf: 100, date: 'Nov 2025', type: 'Industrial', url: 'https://www.loopnet.com/search/commercial-real-estate/fayetteville-ar/for-sale/' },
+  { id: 1, name: 'Lowell Flex Building', address: '200 Grant Pl, Lowell, AR 72745', sf: 58698, salePrice: 7250000, ppsf: 123, date: '2025', type: 'Flex Industrial', yearBuilt: 2022, url: 'https://talkbusiness.net/2025/09/real-deals-rogers-industrial-site-sells-for-8-2-million/' },
+  { id: 2, name: 'Springdale Warehouse', address: '4659 Wildwood Ln, Springdale, AR', sf: 24900, salePrice: 3700000, ppsf: 149, date: 'Aug 2025', type: 'Warehouse', yearBuilt: null, url: 'https://talkbusiness.net/2025/09/four-arkansas-properties-sell-for-13-4-million/' },
+  { id: 3, name: 'Rogers Industrial Campus', address: '110-115 E Linden St, Rogers, AR', sf: 82658, salePrice: 8200000, ppsf: 99, date: 'Dec 2025', type: 'Warehouse Portfolio', yearBuilt: null, url: 'https://www.loopnet.com/Listing/1821-S-1st-St-Rogers-AR/36273915/' },
+  { id: 4, name: 'N. Little Rock Flex Portfolio', address: 'Harold & 38th St, N. Little Rock, AR', sf: 23480, salePrice: 1575000, ppsf: 67, date: 'Aug 2025', type: 'Office/Flex', yearBuilt: null, url: 'https://talkbusiness.net/2025/09/four-arkansas-properties-sell-for-13-4-million/' },
+  { id: 5, name: 'Fayetteville Industrial', address: 'Fayetteville, AR', sf: 150000, salePrice: 15000000, ppsf: 100, date: 'Nov 2025', type: 'Industrial', yearBuilt: null, url: 'https://talkbusiness.net/2025/11/real-deals-fayetteville-industrial-building-sells-for-15-million/' },
+  { id: 6, name: 'Maumelle Warehouse', address: '1401 Murphy Dr, Maumelle, AR', sf: 160000, salePrice: 8729294, ppsf: 55, date: 'Oct 2025', type: 'Warehouse (NNN)', yearBuilt: null, url: 'https://talkbusiness.net/2025/10/maumelle-warehouse-sold-in-8-7-million-transaction/' },
 ]
 
 const MARKET_DATA = {
@@ -43,12 +44,14 @@ const MARKET_DATA = {
 }
 
 const SOURCES = [
-  { name: 'LoopNet Listing #32391011', url: 'https://www.loopnet.com/Listing/6361-S-Oldridge-Pl-Rogers-AR/32391011/' },
-  { name: 'Cushman & Wakefield NWA Industrial Report', url: 'https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/arkansas-marketbeats' },
-  { name: 'Talk Business & Politics', url: 'https://talkbusiness.net/' },
+  { name: 'LoopNet — Subject Property Listing', url: 'https://www.loopnet.com/Listing/6361-S-Oldridge-Pl-Rogers-AR/32391011/' },
+  { name: 'Cushman & Wakefield NWA Q3 2025', url: 'https://www.sagepartners.com/nwa-2025-q3-market-summary/' },
+  { name: 'Talk Business — NWA Real Deals', url: 'https://talkbusiness.net/2025/09/four-arkansas-properties-sell-for-13-4-million/' },
+  { name: 'Talk Business — Lowell/Rogers Sales', url: 'https://talkbusiness.net/2025/09/real-deals-rogers-industrial-site-sells-for-8-2-million/' },
   { name: 'FRED — Fayetteville MSA Data', url: 'https://fred.stlouisfed.org/tags/series?t=fayetteville' },
   { name: 'CBRE Cap Rate Survey H1 2024', url: 'https://www.cbre.com/insights/books/cap-rate-survey' },
-  { name: 'Rogers AR Building Permits', url: 'https://www.rogersar.gov/298/Building-Permits' },
+  { name: 'Colliers Arkansas Industrial Sales', url: 'https://armoneyandpolitics.com/colliers-arkansas-industrial-sales/' },
+  { name: 'LoopNet — Rogers Linden Portfolio', url: 'https://www.loopnet.com/Listing/1821-S-1st-St-Rogers-AR/36273915/' },
 ]
 
 // ─── VALUATION ──────────────────────────────────────────────────────────────
@@ -99,7 +102,7 @@ export default function Dashboard() {
   const v = scenarios[activeScenario]
 
   const compChartData = [...COMPS.map(c => ({
-    name: c.name.length > 20 ? c.name.split(' ').slice(0,2).join(' ') : c.name,
+    name: c.name.length > 16 ? c.name.split(' ').slice(0,2).join(' ') : c.name,
     ppsf: c.ppsf,
     fill: '#94a3b8',
   })), {
@@ -293,7 +296,7 @@ export default function Dashboard() {
 
         {/* ── 03 COMPARABLE SALES ── */}
         <section className="mb-10">
-          <SectionLabel number="03" title="Comparable Sales Analysis" subtitle="Recent transactions in the NWA market" />
+          <SectionLabel number="03" title="Comparable Sales Analysis" subtitle="Recent small-format industrial & flex transactions in Arkansas" />
 
           <div className="overflow-x-auto border border-[#e2e8f0] rounded-lg">
             <table className="w-full text-sm">
@@ -344,9 +347,9 @@ export default function Dashboard() {
           <div className="mt-6 border border-[#e2e8f0] rounded-lg p-5 bg-[#fafbfc]">
             <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-3">Price per Square Foot Comparison</p>
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={compChartData} barGap={6}>
+              <BarChart data={compChartData} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 9 }} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} interval={0} angle={-15} textAnchor="end" height={50} />
                 <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={val => `$${val}`} axisLine={false} tickLine={false} />
                 <Tooltip content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null
