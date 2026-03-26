@@ -542,6 +542,180 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {/* ── 07 DEAL INTELLIGENCE ── */}
+        <section className="mb-10">
+          <SectionLabel number="07" title="Deal Intelligence" subtitle="Ownership, broker contacts & negotiating position" />
+
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Ownership & Developer */}
+            <div className="border border-[#e2e8f0] rounded-lg overflow-hidden">
+              <div className="bg-[#f8fafc] px-4 py-2.5 border-b border-[#e2e8f0]">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Ownership & Developer</p>
+              </div>
+              <div className="px-4 py-3 text-sm text-[#475569] space-y-2 leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium w-20 flex-shrink-0 pt-0.5">Entity</span>
+                  <span className="font-medium text-[#0f172a]">I49 Industrial LLC</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium w-20 flex-shrink-0 pt-0.5">Principals</span>
+                  <span>Ivan E. Crossland Jr. & Mattie Crossland</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium w-20 flex-shrink-0 pt-0.5">Parent</span>
+                  <span>Crossland Realty Group (division of Crossland Construction — ENR Top 400)</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium w-20 flex-shrink-0 pt-0.5">Strategy</span>
+                  <span>Build-to-hold. Repeat NWA industrial developer (1M+ SF in the I-49 corridor via CrossMar Investments).</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium w-20 flex-shrink-0 pt-0.5">GC Office</span>
+                  <span>1800 S. 52nd St., Ste 410, Rogers, AR 72758 — <span className="font-mono text-[#0f172a]">(479) 464-7077</span></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Listing Brokers */}
+            <div className="border border-[#e2e8f0] rounded-lg overflow-hidden">
+              <div className="bg-[#f8fafc] px-4 py-2.5 border-b border-[#e2e8f0]">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">Listing Brokers — Cushman & Wakefield | Sage Partners</p>
+              </div>
+              <div className="divide-y divide-[#f1f5f9]">
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-sm text-[#0f172a]">Matt Mozzoni</span>
+                    <span className="inline-block text-[9px] tracking-wider uppercase font-medium px-1.5 py-0.5 rounded bg-[#dbeafe] text-[#1e40af]">Power Broker</span>
+                  </div>
+                  <div className="text-xs text-[#64748b]">Managing Director, Principal NWA</div>
+                  <div className="flex items-center gap-4 mt-1.5">
+                    <span className="font-mono text-sm text-[#0f172a]">(479) 845-3019</span>
+                    <a href="https://www.linkedin.com/in/matt-mozzoni-7a293a64/" target="_blank" rel="noopener noreferrer" className="text-xs text-[#1e40af] hover:underline">LinkedIn</a>
+                  </div>
+                  <p className="text-[11px] text-[#94a3b8] mt-1">Focus: Tenant rep, Walmart vendor acquisitions, Fort Smith/Van Buren industrial. CCIM & SIOR candidate.</p>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-sm text-[#0f172a]">Lauren Blass</span>
+                  </div>
+                  <div className="text-xs text-[#64748b]">Associate Broker</div>
+                  <div className="flex items-center gap-4 mt-1.5">
+                    <span className="font-mono text-sm text-[#0f172a]">(479) 845-3000</span>
+                  </div>
+                  <p className="text-[11px] text-[#94a3b8] mt-1">Prior: SVP Client Engagement at VML Commerce / Wunderman Thompson. Joined Sage Partners 2025.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Full Park Summary */}
+          <div className="border border-[#e2e8f0] rounded-lg overflow-hidden mb-6">
+            <div className="bg-[#eff6ff] px-5 py-3 border-b border-[#dbeafe]">
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[#1e40af] font-semibold">Full Park — Two Buildings on 16.4 Acres</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#f8fafc] text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium">
+                    <th className="text-left py-2.5 px-4">Building</th>
+                    <th className="text-right py-2.5 px-3">Size (SF)</th>
+                    <th className="text-right py-2.5 px-3">Asking Rent</th>
+                    <th className="text-right py-2.5 px-3">Clear Height</th>
+                    <th className="text-right py-2.5 px-3">Doors</th>
+                    <th className="text-right py-2.5 px-3">Use</th>
+                    <th className="text-right py-2.5 px-4">Terms</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-[13px]">
+                  <tr className="border-t border-[#f1f5f9]">
+                    <td className="py-2.5 px-4 font-sans font-medium text-[#0f172a]">Bldg 1 — Flex/Retail</td>
+                    <td className="py-2.5 px-3 text-right">38,189</td>
+                    <td className="py-2.5 px-3 text-right text-[#1e40af] font-semibold">$19.00/SF</td>
+                    <td className="py-2.5 px-3 text-right">16&apos;6&quot;</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">32 grade-level + glass roll-up</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">Office / Retail</td>
+                    <td className="py-2.5 px-4 text-right font-sans text-xs text-[#64748b]">5-7 yr NNN</td>
+                  </tr>
+                  <tr className="border-t border-[#f1f5f9] bg-[#fafbfc]">
+                    <td className="py-2.5 px-4 font-sans font-medium text-[#0f172a]">Bldg 2 — Flex/Warehouse</td>
+                    <td className="py-2.5 px-3 text-right">38,225</td>
+                    <td className="py-2.5 px-3 text-right text-[#1e40af] font-semibold">$16.00/SF</td>
+                    <td className="py-2.5 px-3 text-right">18&apos;6&quot;</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">16 dock-high + 16 glass roll-up</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">Flex / Warehouse</td>
+                    <td className="py-2.5 px-4 text-right font-sans text-xs text-[#64748b]">5-7 yr NNN</td>
+                  </tr>
+                  <tr className="border-t-2 border-[#0f172a] font-semibold">
+                    <td className="py-2.5 px-4 font-sans">Combined Park Total</td>
+                    <td className="py-2.5 px-3 text-right">76,414</td>
+                    <td className="py-2.5 px-3 text-right text-[#64748b]">$16–$19/SF</td>
+                    <td className="py-2.5 px-3 text-right">—</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">Cross-dock capable</td>
+                    <td className="py-2.5 px-3 text-right font-sans text-xs text-[#64748b]">Mixed flex</td>
+                    <td className="py-2.5 px-4 text-right font-sans text-xs text-[#64748b]">Shell, avail now</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="px-4 py-2.5 bg-[#f8fafc] border-t border-[#e2e8f0] text-[11px] text-[#94a3b8]">
+              TI allowance: $30–$35/SF ($133K–$155K per bay) · Min divisible: 4,432 SF · 480V 3-phase power · ESFR sprinklers · Min 5-yr lease
+            </div>
+          </div>
+
+          {/* Negotiating Position */}
+          <div className="border border-[#e2e8f0] rounded-lg overflow-hidden">
+            <div className="bg-[#fef2f2] px-5 py-3 border-b border-[#fecaca]">
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[#991b1b] font-semibold">Negotiating Leverage</p>
+            </div>
+            <div className="px-5 py-4 text-sm text-[#475569] leading-relaxed space-y-3">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">Time on Market</div>
+                  <div className="text-lg font-semibold font-mono text-[#dc2626]">7+ months</div>
+                  <p className="text-[12px] text-[#64748b] mt-1">Delivered summer 2025, still showing &quot;Available Now&quot; as of Feb 2026. Listed since Aug 2023.</p>
+                </div>
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">Carry Cost Pressure</div>
+                  <div className="text-lg font-semibold font-mono text-[#dc2626]">$15M+</div>
+                  <p className="text-[12px] text-[#64748b] mt-1">Est. construction cost on 76K SF new-build park sitting vacant — significant monthly debt service with zero rental income.</p>
+                </div>
+                <div className="bg-[#f8fafc] rounded-md p-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-1">Pricing Advantage</div>
+                  <div className="text-lg font-semibold font-mono text-[#16a34a]">~50% below</div>
+                  <p className="text-[12px] text-[#64748b] mt-1">Bldg 1 at $19/SF vs $40/SF at Pinnacle Hills one exit north. Strong value story even at asking.</p>
+                </div>
+              </div>
+              <div className="bg-[#fffbeb] border border-[#fde68a] rounded-md p-3 mt-2">
+                <p className="text-[13px]"><span className="font-semibold text-[#92400e]">Suggested approach:</span> Contact Matt Mozzoni at (479) 845-3019. Ask about current occupancy across both buildings, any LOIs in hand, and whether the developer would entertain a purchase vs. lease. For Bldg 2 specifically, target $14–$15/SF on a long-term commitment (vs. $16 ask). On a purchase basis, frame the offer in the conservative scenario range ({fmt(scenarios.conservative.value)}) to account for lease-up risk, then negotiate toward the base case.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="mt-6 border border-[#e2e8f0] rounded-lg p-4">
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[#94a3b8] font-medium mb-3">Development Timeline</p>
+            <div className="flex items-center gap-0 overflow-x-auto">
+              {[
+                { date: 'Aug 2023', label: 'Listed on LoopNet' },
+                { date: 'Nov 2023', label: 'Building permits filed' },
+                { date: 'Jun 2024', label: 'Addition permit ($80K)' },
+                { date: 'Summer 2025', label: 'Delivery / completion' },
+                { date: 'Feb 2026', label: 'Last listing update' },
+                { date: 'Today', label: '7+ mo. vacant post-delivery', highlight: true },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center flex-shrink-0">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-3 h-3 rounded-full ${item.highlight ? 'bg-[#dc2626]' : 'bg-[#1e40af]'}`}></div>
+                    <div className={`text-[10px] font-medium mt-1 ${item.highlight ? 'text-[#dc2626]' : 'text-[#0f172a]'}`}>{item.date}</div>
+                    <div className="text-[10px] text-[#94a3b8] max-w-[100px] text-center">{item.label}</div>
+                  </div>
+                  {i < 5 && <div className="w-8 h-px bg-[#cbd5e1] mx-1 mt-[-16px]"></div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── SOURCES ── */}
         <section className="mb-6">
           <div className="border-t border-[#e2e8f0] pt-6">
